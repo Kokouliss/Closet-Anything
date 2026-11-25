@@ -1,0 +1,108 @@
+# Every pull request and every merge to main runs the unit tests and builds the debug APK (signed
+# with app/debug.keystore, so Google sign-in accepts it), then puts it on a release page: a
+# pre-release "pr-<number>" while a pull request is open, a numbered release after each merge. The
+# newest merged build is always at
+# https://github.com/Kokouliss/Closet-Anything/releases/latest
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  # A newer push replaces a pull request's build, but every merge to main gets its own release.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  VERSION: 0.1.${{ github.run_number }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # The Firebase config is not in the repository (it is public). Sign-in only works in builds
+      # that have it, so it comes from a repository secret when one is set.
+      - name: Write the Firebase config
+        if: env.GOOGLE_SERVICES_JSON != ''
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
+
+      # app/build.gradle.kts reads GITHUB_RUN_NUMBER for the version, so each build installs over the one before.
+      - name: Test and build the debug app
+        run: ./gradlew test :app:assembleDebug
+
+      - name: Upload the installable APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: closet-anything-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore
+
+  # A separate job, so the build never holds a token that can write.
+  release:
+    needs: build
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: closet-anything-debug-apk
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          keeps="Download the APK below and open it on the phone. It installs over the version you have."
+          if [ -n "$PR_NUMBER" ]; then
+            tag="pr-$PR_NUMBER"
+            target="$PR_HEAD"
+            title="PR #$PR_NUMBER: $PR_TITLE (build $VERSION)"
+            notes="Test build of pull request #$PR_NUMBER, replaced every time the pull request changes. $keeps"
+            apk="closet-anything-pr-$PR_NUMBER-$VERSION.apk"
+            kind=--prerelease
+          else
+            # The pull request this merge came from names the release, and its test build is retired.
+            merged=$(gh api "repos/$GH_REPO/commits/$GITHUB_SHA/pulls" --jq '.[0] // empty | "\(.number) \(.title)"' || true)
+            tag="v$VERSION"
+            target="$GITHUB_SHA"
+            title="$tag"
+            notes="$keeps"
+            if [ -n "$merged" ]; then
+              title="$tag: ${merged#* } (#${merged%% *})"
+              notes="Built from pull request #${merged%% *}. $keeps"
+              gh release delete "pr-${merged%% *}" --cleanup-tag --yes 2>/dev/null || true
+            fi
+            apk="closet-anything-$VERSION.apk"
+            kind=--latest
+          fi
+          mv ./*.apk "$apk"
+          # Deleting first makes a re-run, or a new push to the pull request, replace the release.
+          gh release delete "$tag" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$tag" "$apk" --target "$target" --title "$title" --notes "$notes" "$kind"

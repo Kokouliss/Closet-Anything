@@ -1,0 +1,14 @@
+{
+  "name": "closet-anything-firestore-rules",
+  "private": true,
+  "type": "module",
+  "description": "Tests firestore.rules on the local Firestore emulator. Needs Node 20+ and Java 21+.",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-closet-anything \"node --test test/rules.test.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.2.0",
+    "firebase-tools": "^15.35.0"
+  }
+}
