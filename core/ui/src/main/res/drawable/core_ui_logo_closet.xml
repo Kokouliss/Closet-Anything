@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app logo without its dark tile: a shelf with the three AnyKind shapes on it and two piles of
+     folded clothes under it, in the same 100 by 100 box as the other apps' logos, so the launcher
+     icon and the sign-in screen can put the tile behind it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <group
+        android:scaleX="0.9"
+        android:scaleY="0.9"
+        android:translateX="5"
+        android:translateY="5">
+        <path
+            android:fillColor="#B4472E"
+            android:pathData="M27,32m-9,0a9,9 0,1 0,18 0a9,9 0,1 0,-18 0" />
+        <path
+            android:fillColor="#B58428"
+            android:pathData="M42,23h16a2,2 0,0 1,2 2v14a2,2 0,0 1,-2 2h-16a2,2 0,0 1,-2 -2v-14a2,2 0,0 1,2 -2z" />
+        <path
+            android:fillColor="#2F7F92"
+            android:pathData="M74,21.5L85,41H63z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M15,41h70a3.5,3.5 0,0 1,0 7h-70a3.5,3.5 0,0 1,0 -7zM18,57h26a3,3 0,0 1,0 6h-26a3,3 0,0 1,0 -6zM18,66h26a3,3 0,0 1,0 6h-26a3,3 0,0 1,0 -6zM18,75h26a3,3 0,0 1,0 6h-26a3,3 0,0 1,0 -6zM56,57h26a3,3 0,0 1,0 6h-26a3,3 0,0 1,0 -6zM56,66h26a3,3 0,0 1,0 6h-26a3,3 0,0 1,0 -6zM56,75h26a3,3 0,0 1,0 6h-26a3,3 0,0 1,0 -6z" />
+    </group>
+</vector>
