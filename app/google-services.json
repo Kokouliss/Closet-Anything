@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "173550028565",
+    "project_id": "closet-anything",
+    "storage_bucket": "closet-anything.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:173550028565:android:6a696cbf52ff3656068b1c",
+        "android_client_info": {
+          "package_name": "com.kokouliss.closetanything"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "173550028565-0vk79ups50a5rciv3cu6s2uioagim113.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDz2DdPX7SmU9KUJIySrJTWMb74dIIZwYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "173550028565-0vk79ups50a5rciv3cu6s2uioagim113.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
